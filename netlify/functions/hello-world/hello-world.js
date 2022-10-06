@@ -1,15 +1,18 @@
-import algoliasearch from 'algoliasearch'
-import sanityClient, { SanityDocumentStub } from '@sanity/client'
-import indexer from 'sanity-algolia'
+import algoliasearch from 'algoliasearch';
+import sanityClient from '@sanity/client';
+import indexer from 'sanity-algolia';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const algolia = algoliasearch(
-  'C26QC41PWH',
-  "e23b64dadd4c26f8678c15a2593521fa"
+  process.env.ALGOLIA_APP_ID,
+  process.env.ALGOLIA_API_KEY
 );
 
 const sanity = sanityClient({
-  projectId: 'sukats6f',
-  dataset: 'test',
+  projectId: process.env.SANITY_PROJECT_ID,
+  dataset: process.env.SANITY_DATASET,
   apiVersion: '2022-09-25',
   useCdn: false,
 });
@@ -22,39 +25,35 @@ const handler = (req, res) => {
     return
   }
 
-  const algoliaIndex = algolia.initIndex('my-index');
+  const algoliaIndex = algolia.initIndex(process.env.ALGOLIA_INDEX_NAME);
 
   const sanityAlgolia = indexer(
     {
       post: {
         index: algoliaIndex,
-        projection: `{
-          title,
-          "path": slug.current,
-          "body": pt::text(body)
-        }`,
+        // projection: `{
+        //   title,
+        //   "path": slug.current,
+        //   "body": pt::text(body)
+        // }`,
       },
       article: {
         index: algoliaIndex,
-        projection: `{
-          heading,
-          "body": pt::text(body),
-          "authorNames": authors[]->name
-        }`,
+        // projection: `{
+        //   heading,
+        //   "body": pt::text(body),
+        //   "authorNames": authors[]->name
+        // }`,
       },
     },
 
     (document) => {
       switch (document._type) {
-        case 'post':
-          return Object.assign({}, document, {
-            custom: 'An additional custom field for posts, perhaps?',
-          })
-        case 'article':
+        case 'standard-article':
           return {
-            title: document.heading,
-            body: document.body,
-            authorNames: document.authorNames,
+            title: document.heading || {},
+            body: document.body || {},
+            authorNames: document.authorNames || {},
           }
         default:
           return document
