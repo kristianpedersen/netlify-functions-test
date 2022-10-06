@@ -1,3 +1,5 @@
+console.log("Klar til å motta webhooks!")
+
 import algoliasearch from 'algoliasearch';
 import sanityClient from '@sanity/client';
 import indexer from 'sanity-algolia';
