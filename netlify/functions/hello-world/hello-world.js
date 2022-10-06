@@ -20,11 +20,11 @@ const sanity = sanityClient({
 });
 
 // Docs on event and context https://docs.netlify.com/functions/build/#code-your-function-2
-const handler = (req, res) => {
-  console.log({ req, res })
-  if (req.headers['content-type'] !== 'application/json') {
-    res.status(400)
-    res.json({ message: 'Bad request' })
+const handler = async (event, context) => {
+  console.log({ req: event, res: context })
+  if (event.headers['content-type'] !== 'application/json') {
+    context.status(400)
+    context.json({ message: 'Bad request' })
     return
   }
 
@@ -64,8 +64,8 @@ const handler = (req, res) => {
     }
   )
 
-  return sanityAlgolia.webhookSync(sanity, req.body)
-    .then(() => res.status(200).send("ok"))
+  return sanityAlgolia.webhookSync(sanity, event.body)
+    .then(() => context.status(200).send("ok"))
 }
 
-module.exports = { handler }
+export { handler };
